@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | SmartSpend{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2">
+  <div>
+    <p class="eyebrow mb-1">Financial Intelligence</p>
+    <h1 class="h2 fw-bold mb-1">Expense Dashboard</h1>
+    <p class="text-muted mb-0">Welcome back, <span class="text-gold fw-semibold">{{ user.username }}</span>. Here's your spending overview.</p>
+  </div>
+  <a class="btn btn-primary mt-3 mt-md-0 d-inline-flex align-items-center gap-2" href="{% url 'expense_create' %}">
+    <span>+</span>
+    <span>Record Expense</span>
+  </a>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card card-accent-gold">
+      <span class="stat-label">All-Time Expenses</span>
+      <div class="stat-value">₹{{ total|floatformat:2 }}</div>
+      <span class="text-muted small">Total recorded lifetime spending</span>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card card-accent-orange">
+      <span class="stat-label">This Week</span>
+      <div class="stat-value">₹{{ weekly|floatformat:2 }}</div>
+      <span class="text-muted small">Monday through today</span>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <span class="stat-label">This Month</span>
+      <div class="stat-value">₹{{ monthly|floatformat:2 }}</div>
+      <span class="text-muted small">Current billing cycle to-date</span>
+    </div>
+  </div>
+</div>
+
+<!-- Charts & Recents Section -->
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="panel p-4 h-100">
+      <div class="mb-3">
+        <h5 class="fw-bold mb-1">Spending by Category</h5>
+        <p class="text-muted small mb-0">Distribution across all your recorded expenses</p>
+      </div>
+      {% if category_labels %}
+        <div class="position-relative py-2" style="max-height: 320px;">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      {% else %}
+        <div class="empty-state mt-4">
+          <p class="mb-2">No expenses recorded yet.</p>
+          <a href="{% url 'expense_create' %}" class="btn btn-sm btn-outline-gold">Add your first expense</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="panel p-4 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="fw-bold mb-1">Recent Expenses</h5>
+          <p class="text-muted small mb-0">Your latest transactions</p>
+        </div>
+        <a href="{% url 'expense_list' %}" class="btn btn-sm btn-outline-gold">View all &rarr;</a>
+      </div>
+
+      {% if recent %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Expense</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th class="text-end">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in recent %}
+                <tr>
+                  <td class="fw-semibold text-white">{{ item.title }}</td>
+                  <td><span class="category-pill">{{ item.category }}</span></td>
+                  <td class="text-muted small">{{ item.date|date:"d M Y" }}</td>
+                  <td class="text-end fw-bold text-gold">₹{{ item.amount|floatformat:2 }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state mt-4">
+          <p class="mb-2">Your expense history is empty.</p>
+          <a href="{% url 'expense_create' %}" class="btn btn-sm btn-outline-gold">Record an expense</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if category_labels %}
+<script>
+  const ctx = document.getElementById('categoryChart').getContext('2d');
+  
+  // Luxury Black, Orange & Gold palette for Doughnut chart
+  const themeColors = [
+    '#FF6A00', // Vibrant Orange
+    '#F5CF5E', // Warm Gold
+    '#FF9E42', // Amber Orange
+    '#D4AF37', // Imperial Gold
+    '#FF5500', // Deep Orange
+    '#FFE066', // Bright Yellow Gold
+    '#E05500', // Crimson Orange
+    '#AA801E', // Antique Gold
+    '#FB923C'  // Sunset Orange
+  ];
+
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: {{ category_labels|safe }},
+      datasets: [{
+        data: {{ category_values|safe }},
+        backgroundColor: themeColors.slice(0, {{ category_labels|length }}),
+        borderColor: '#101217',
+        borderWidth: 3,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#cbd5e1',
+            font: {
+              family: "'Plus Jakarta Sans', sans-serif",
+              size: 12,
+              weight: '500'
+            },
+            padding: 14,
+            usePointStyle: true,
+            pointStyle: 'circle'
+          }
+        },
+        tooltip: {
+          backgroundColor: '#0c0d12',
+          titleColor: '#ffd700',
+          bodyColor: '#ffffff',
+          borderColor: 'rgba(212, 175, 55, 0.4)',
+          borderWidth: 1,
+          padding: 12,
+          boxPadding: 6,
+          callbacks: {
+            label: function(context) {
+              const val = context.parsed || 0;
+              return `  ₹${val.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+            }
+          }
+        }
+      }
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

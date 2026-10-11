@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Login | SmartSpend{% endblock %}
+
+{% block content %}
+<div class="auth-card mx-auto">
+  <div class="text-center mb-4">
+    <div class="d-inline-flex align-items-center justify-content-center mb-3">
+      <span class="currency-badge" style="width: 42px; height: 42px; font-size: 1.35rem;">₹</span>
+    </div>
+    <h2 class="h3 fw-bold mb-1">Welcome Back</h2>
+    <p class="text-muted small mb-0">Access your private SmartSpend dashboard</p>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger py-2 small mb-3">
+        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+      </div>
+    {% endif %}
+
+    {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% for error in field.errors %}
+          <div class="text-danger small mt-1">{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+
+    <button class="btn btn-primary w-100 py-2 mt-2">Sign In</button>
+  </form>
+
+  <div class="text-center mt-4 pt-2 border-top border-secondary border-opacity-25">
+    <p class="small text-muted mb-0">
+      New to SmartSpend? <a href="{% url 'signup' %}" class="text-gold fw-semibold">Create an account &rarr;</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
