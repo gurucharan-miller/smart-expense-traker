@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Expenses | SmartSpend{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2">
+  <div>
+    <p class="eyebrow mb-1">Transaction Ledger</p>
+    <h1 class="h2 fw-bold mb-1">Your Expenses</h1>
+    <p class="text-muted mb-0">Privately secured and categorized for your personal account.</p>
+  </div>
+  <a class="btn btn-primary mt-3 mt-md-0 d-inline-flex align-items-center gap-2" href="{% url 'expense_create' %}">
+    <span>+</span>
+    <span>Add Expense</span>
+  </a>
+</div>
+
+<!-- Category Filter Panel -->
+<div class="panel p-3 mb-4">
+  <form class="d-flex gap-3 align-items-end flex-wrap" method="get">
+    <div style="min-width: 240px;" class="flex-grow-1 flex-md-grow-0">
+      <label class="form-label mb-1">Filter by Category</label>
+      <select class="form-select" name="category">
+        <option value="">All Categories</option>
+        {% for value, label in categories %}
+          <option value="{{ value }}" {% if category == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary px-3">Filter</button>
+      <a class="btn btn-outline-secondary px-3" href="{% url 'expense_list' %}">Reset</a>
+    </div>
+  </form>
+</div>
+
+<!-- Expenses Table Panel -->
+<div class="panel p-4 table-responsive">
+  <table class="table align-middle">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Category</th>
+        <th>Date</th>
+        <th>Amount</th>
+        <th>Notes</th>
+        <th class="text-end">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in expenses %}
+        <tr>
+          <td class="fw-semibold text-white">{{ item.title }}</td>
+          <td><span class="category-pill">{{ item.category }}</span></td>
+          <td class="text-muted small">{{ item.date|date:"d M Y" }}</td>
+          <td class="fw-bold text-gold">₹{{ item.amount|floatformat:2 }}</td>
+          <td class="text-secondary small">{{ item.notes|default:"—"|truncatechars:40 }}</td>
+          <td class="text-end">
+            <div class="d-inline-flex gap-1">
+              <a class="btn btn-sm btn-outline-gold" href="{% url 'expense_edit' item.pk %}">Edit</a>
+              <a class="btn btn-sm btn-outline-danger" href="{% url 'expense_delete' item.pk %}">Delete</a>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" class="text-center py-5">
+            <div class="empty-state">
+              <p class="mb-2">No matching expenses found.</p>
+              <a href="{% url 'expense_create' %}" class="btn btn-sm btn-primary">Add a new expense</a>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

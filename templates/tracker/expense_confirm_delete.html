@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Delete Expense | SmartSpend{% endblock %}
+
+{% block content %}
+<div class="panel mx-auto form-card p-4 p-md-5" style="border-color: rgba(239, 68, 68, 0.4) !important;">
+  <div class="mb-4">
+    <p class="text-danger fw-bold small text-uppercase tracking-wider mb-1">Confirm Deletion</p>
+    <h1 class="h3 fw-bold text-white mb-2">Delete this expense?</h1>
+    <p class="text-secondary mb-0">
+      Are you sure you want to permanently remove <strong class="text-white">{{ expense.title }}</strong> (<span class="text-gold fw-bold">₹{{ expense.amount }}</span>)? This action cannot be reversed.
+    </p>
+  </div>
+
+  <form method="post" class="d-flex gap-2">
+    {% csrf_token %}
+    <button class="btn btn-danger px-4">Yes, Delete Expense</button>
+    <a class="btn btn-outline-secondary px-4" href="{% url 'expense_list' %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}
